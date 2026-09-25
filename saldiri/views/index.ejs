@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OSINT SYSTEM</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #05070f url('https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?q=80&w=2000&auto=format&fit=crop') no-repeat center center fixed;
+            background-size: cover;
+            color: #e2e8f0;
+            min-height: 100vh;
+        }
+
+        header {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 15px 20px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .top-left, .top-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.7);
+        }
+
+        .btn-music {
+            background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+            box-shadow: 0 0 10px rgba(139, 92, 246, 0.4);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444, #b91c1c);
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
+        }
+
+        .container {
+            max-width: 650px;
+            margin: 30px auto;
+            padding: 0 15px;
+        }
+
+        .glass-card {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .glass-card input, .glass-card textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0 15px 0;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            color: #fff;
+            box-sizing: border-box;
+            outline: none;
+        }
+
+        .post-card {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+
+        .post-card img {
+            width: 100%;
+            max-height: 480px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .post-content {
+            padding: 20px;
+        }
+
+        .post-content h3 {
+            margin: 0 0 10px 0;
+            color: #60a5fa;
+            font-size: 20px;
+        }
+
+        .post-content p {
+            color: #cbd5e1;
+            line-height: 1.5;
+            margin: 0 0 10px 0;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Gizli YouTube Oynatıcısı */
+        #yt-player-container {
+            position: absolute;
+            left: -9999px;
+            top: -9999px;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- GİZLİ YOUTUBE OYNATICI ALANI -->
+    <div id="yt-player-container">
+        <div id="yt-player"></div>
+    </div>
+
+    <header>
+        <div class="top-left">
+            <% if (!user) { %>
+                <button class="btn" onclick="toggleLoginForm()">Giriş Yap</button>
+            <% } else { %>
+                <a href="/logout" class="btn btn-danger">Çıkış Yap (<%= user.username %>)</a>
+            <% } %>
+        </div>
+
+        <h2 style="margin:0; font-weight: 700; letter-spacing: 3px; color: #60a5fa;">OSINT SYSTEM</h2>
+
+        <div class="top-right">
+            <button id="musicBtn" class="btn btn-music" onclick="toggleMusic()">🎵 Müzik Yükleniyor...</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Giriş Formu -->
+        <% if (!user) { %>
+            <div id="loginFormContainer" class="glass-card hidden">
+                <h4 style="margin-top:0; color:#93c5fd;">Sistem Girişi</h4>
+                <form action="/login" method="POST">
+                    <label style="font-size:12px;">Kullanıcı Adı:</label>
+                    <input type="text" name="username" placeholder="administe45" required>
+                    <label style="font-size:12px;">Şifre:</label>
+                    <input type="password" name="password" placeholder="administe45" required>
+                    <button type="submit" class="btn" style="width: 100%;">Giriş Yap</button>
+                </form>
+            </div>
+        <% } %>
+
+        <!-- Admin Paneli -->
+        <% if (user && user.username === 'administe45') { %>
+            <div class="glass-card">
+                <h3 style="margin-top:0; color:#60a5fa;">Veri / Fotoğraf Ekle</h3>
+                <form action="/add-post" method="POST" enctype="multipart/form-data">
+                    <label>Fotoğraf Seç:</label>
+                    <input type="file" name="image" accept="image/*" required>
+                    <label>Başlık:</label>
+                    <input type="text" name="title" placeholder="Başlık girin..." required>
+                    <label>Açıklama:</label>
+                    <textarea name="description" rows="3" placeholder="Açıklama girin..." required></textarea>
+                    <button type="submit" class="btn" style="width: 100%; background: linear-gradient(135deg, #10b981, #047857);">Sisteme Kaydet</button>
+                </form>
+            </div>
+        <% } %>
+
+        <!-- Gönderiler -->
+        <div class="posts-feed">
+            <% if (posts.length === 0) { %>
+                <p style="text-align: center; color: #94a3b8;">Henüz eklenmiş veri bulunmuyor.</p>
+            <% } else { %>
+                <% posts.forEach(post => { %>
+                    <div class="post-card">
+                        <% if (post.image) { %>
+                            <img src="<%= post.image %>" alt="Fotoğraf">
+                        <% } %>
+                        <div class="post-content">
+                            <h3><%= post.title %></h3>
+                            <p><%= post.description %></p>
+                            <small style="color: #64748b;"><%= post.created_at %></small>
+                        </div>
+                    </div>
+                <% }) %>
+            <% } %>
+        </div>
+    </div>
+
+    <!-- RESMİ YOUTUBE IFRAME API KÜTÜPHANESİ -->
+    <script src="https://www.youtube.com/iframe_api"></script>
+
+    <script>
+        let player;
+        let isPlayerReady = false;
+        let isMusicPlaying = false;
+
+        // YouTube API hazır olduğunda otomatik çalışır
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('yt-player', {
+                height: '1',
+                width: '1',
+                videoId: 'JzKiYkkVwpU', // YouTube Video ID
+                playerVars: {
+                    'autoplay': 0,
+                    'controls': 0,
+                    'start': 15
+                },
+                events: {
+                    'onReady': onPlayerReady
+                }
+            });
+        }
+
+        function onPlayerReady(event) {
+            isPlayerReady = true;
+            document.getElementById('musicBtn').innerText = '🎵 Müzik Başlat';
+        }
+
+        function startMusic() {
+            if (isPlayerReady && player) {
+                player.seekTo(15, true); // 15. saniyeye git
+                player.playVideo();      // Başlat
+                isMusicPlaying = true;
+                document.getElementById('musicBtn').innerText = '🔊 Müzik Çalıyor';
+            }
+        }
+
+        function stopMusic() {
+            if (isPlayerReady && player) {
+                player.pauseVideo();
+                isMusicPlaying = false;
+                document.getElementById('musicBtn').innerText = '🎵 Müzik Başlat';
+            }
+        }
+
+        function toggleMusic() {
+            if (isMusicPlaying) {
+                stopMusic();
+            } else {
+                startMusic();
+            }
+        }
+
+        // Ekrana ilk tıklandığında müzik başlat
+        let autoStarted = false;
+        document.addEventListener('click', function() {
+            if (!autoStarted && !isMusicPlaying && isPlayerReady) {
+                startMusic();
+                autoStarted = true;
+            }
+        });
+
+        function toggleLoginForm() {
+            const container = document.getElementById('loginFormContainer');
+            if (container) container.classList.toggle('hidden');
+        }
+    </script>
+</body>
+</html>
