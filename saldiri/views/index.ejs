@@ -99,11 +99,24 @@
             box-shadow: 0 10px 25px rgba(0,0,0,0.5);
         }
 
+        /* FOTOĞRAF TIKLANABİLİR BİÇİMLENDİRMESİ */
+        .post-card a.img-container {
+            display: block;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
         .post-card img {
             width: 100%;
             max-height: 480px;
             object-fit: cover;
             display: block;
+            transition: transform 0.3s ease;
+        }
+
+        .post-card a.img-container:hover img {
+            transform: scale(1.02);
         }
 
         .post-content {
@@ -126,7 +139,6 @@
             display: none !important;
         }
 
-        /* Gizli YouTube Oynatıcısı */
         #yt-player-container {
             position: absolute;
             left: -9999px;
@@ -139,7 +151,7 @@
 </head>
 <body>
 
-    <!-- GİZLİ YOUTUBE OYNATICI ALANI -->
+    <!-- GİZLİ YOUTUBE OYNATICI -->
     <div id="yt-player-container">
         <div id="yt-player"></div>
     </div>
@@ -191,7 +203,7 @@
             </div>
         <% } %>
 
-        <!-- Gönderiler -->
+        <!-- Gönderi Akışı -->
         <div class="posts-feed">
             <% if (posts.length === 0) { %>
                 <p style="text-align: center; color: #94a3b8;">Henüz eklenmiş veri bulunmuyor.</p>
@@ -199,7 +211,10 @@
                 <% posts.forEach(post => { %>
                     <div class="post-card">
                         <% if (post.image) { %>
-                            <img src="<%= post.image %>" alt="Fotoğraf">
+                            <!-- FOTOĞRAFA TIKLANDIĞINDA BÜYÜK BOYUTTA YENİ SEKMEDE AÇILIR -->
+                            <a href="<%= post.image %>" target="_blank" class="img-container" title="Büyütmek için tıklayın">
+                                <img src="<%= post.image %>" alt="Fotoğraf">
+                            </a>
                         <% } %>
                         <div class="post-content">
                             <h3><%= post.title %></h3>
@@ -212,7 +227,7 @@
         </div>
     </div>
 
-    <!-- RESMİ YOUTUBE IFRAME API KÜTÜPHANESİ -->
+    <!-- YOUTUBE API -->
     <script src="https://www.youtube.com/iframe_api"></script>
 
     <script>
@@ -220,12 +235,11 @@
         let isPlayerReady = false;
         let isMusicPlaying = false;
 
-        // YouTube API hazır olduğunda otomatik çalışır
         function onYouTubeIframeAPIReady() {
             player = new YT.Player('yt-player', {
                 height: '1',
                 width: '1',
-                videoId: 'JzKiYkkVwpU', // YouTube Video ID
+                videoId: 'JzKiYkkVwpU',
                 playerVars: {
                     'autoplay': 0,
                     'controls': 0,
@@ -244,8 +258,8 @@
 
         function startMusic() {
             if (isPlayerReady && player) {
-                player.seekTo(15, true); // 15. saniyeye git
-                player.playVideo();      // Başlat
+                player.seekTo(15, true);
+                player.playVideo();
                 isMusicPlaying = true;
                 document.getElementById('musicBtn').innerText = '🔊 Müzik Çalıyor';
             }
@@ -267,7 +281,6 @@
             }
         }
 
-        // Ekrana ilk tıklandığında müzik başlat
         let autoStarted = false;
         document.addEventListener('click', function() {
             if (!autoStarted && !isMusicPlaying && isPlayerReady) {
