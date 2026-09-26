@@ -99,12 +99,10 @@
             box-shadow: 0 10px 25px rgba(0,0,0,0.5);
         }
 
-        /* FOTOĞRAF TIKLANABİLİR BİÇİMLENDİRMESİ */
-        .post-card a.img-container {
-            display: block;
-            position: relative;
-            overflow: hidden;
+        .img-container {
             cursor: pointer;
+            overflow: hidden;
+            position: relative;
         }
 
         .post-card img {
@@ -115,7 +113,7 @@
             transition: transform 0.3s ease;
         }
 
-        .post-card a.img-container:hover img {
+        .img-container:hover img {
             transform: scale(1.02);
         }
 
@@ -139,6 +137,45 @@
             display: none !important;
         }
 
+        /* RESİM BÜYÜTME PENCERESİ (MODAL) */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(5, 7, 15, 0.9);
+            backdrop-filter: blur(12px);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            max-width: 90%;
+            max-height: 85vh;
+            border-radius: 12px;
+            box-shadow: 0 0 30px rgba(96, 165, 250, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            object-fit: contain;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: #fff;
+            font-size: 35px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .close-modal:hover {
+            color: #ef4444;
+        }
+
         #yt-player-container {
             position: absolute;
             left: -9999px;
@@ -154,6 +191,12 @@
     <!-- GİZLİ YOUTUBE OYNATICI -->
     <div id="yt-player-container">
         <div id="yt-player"></div>
+    </div>
+
+    <!-- BÜYÜK RESİM PENCERESİ (MODAL) -->
+    <div id="imageModal" class="modal" onclick="closeModal()">
+        <span class="close-modal" onclick="closeModal()">&times;</span>
+        <img class="modal-content" id="fullImage" onclick="event.stopPropagation()">
     </div>
 
     <header>
@@ -211,10 +254,10 @@
                 <% posts.forEach(post => { %>
                     <div class="post-card">
                         <% if (post.image) { %>
-                            <!-- FOTOĞRAFA TIKLANDIĞINDA BÜYÜK BOYUTTA YENİ SEKMEDE AÇILIR -->
-                            <a href="<%= post.image %>" target="_blank" class="img-container" title="Büyütmek için tıklayın">
+                            <!-- FOTOĞRAFA TIKLANDIĞINDA EKRANIN ORTASINDA BÜYÜR -->
+                            <div class="img-container" onclick="openModal('<%= post.image %>')" title="Büyütmek için tıklayın">
                                 <img src="<%= post.image %>" alt="Fotoğraf">
-                            </a>
+                            </div>
                         <% } %>
                         <div class="post-content">
                             <h3><%= post.title %></h3>
@@ -231,6 +274,19 @@
     <script src="https://www.youtube.com/iframe_api"></script>
 
     <script>
+        // RESİM BÜYÜTME PENCERESİ FONKSİYONLARI
+        function openModal(imageSrc) {
+            const modal = document.getElementById('imageModal');
+            const fullImg = document.getElementById('fullImage');
+            fullImg.src = imageSrc;
+            modal.style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('imageModal').style.display = 'none';
+        }
+
+        // MÜZİK KONTROLÜ
         let player;
         let isPlayerReady = false;
         let isMusicPlaying = false;
@@ -282,7 +338,10 @@
         }
 
         let autoStarted = false;
-        document.addEventListener('click', function() {
+        document.addEventListener('click', function(e) {
+            // Modal açıkken veya kapatırken müziği tekrar tetikleme
+            if (e.target.closest('#imageModal')) return;
+
             if (!autoStarted && !isMusicPlaying && isPlayerReady) {
                 startMusic();
                 autoStarted = true;
